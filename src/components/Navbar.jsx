@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ThemeToggle from './ThemeToggle';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -19,7 +20,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="bg-gradient-to-r from-purple-600 to-blue-600 shadow-lg">
+    <nav className="bg-theme-navbar shadow-theme transition-theme">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
@@ -28,7 +29,7 @@ const Navbar = () => {
               <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
                 <span className="text-purple-600 font-bold text-lg">M</span>
               </div>
-              <span className="text-white font-bold text-xl">MoodMate</span>
+              <span className="text-theme-inverse font-bold text-xl">MoodMate</span>
             </div>
           </div>
 
@@ -39,7 +40,7 @@ const Navbar = () => {
                 <a
                   key={link.name}
                   href={link.href}
-                  className="text-white hover:text-purple-200 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-200"
+                  className="text-theme-inverse hover:text-purple-200 px-3 py-2 rounded-md text-sm font-medium transition-theme"
                   onClick={closeMenu}
                 >
                   {link.name}
@@ -48,9 +49,10 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* CTA Button */}
-          <div className="hidden md:block">
-            <button className="bg-white text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+          {/* CTA Button and Theme Toggle */}
+          <div className="hidden md:flex items-center space-x-4">
+            <ThemeToggle />
+            <button className="btn-theme-secondary px-4 py-2 rounded-md text-sm font-medium">
               Get Started
             </button>
           </div>
@@ -59,7 +61,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
-              className="text-white hover:text-purple-200 focus:outline-none focus:text-purple-200"
+              className="text-theme-inverse hover:text-purple-200 focus:outline-none focus:text-purple-200"
               aria-label="Toggle menu"
             >
               <svg
@@ -90,7 +92,7 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Navigation Menu */}
-      <div className={`md:hidden absolute top-16 left-0 right-0 bg-purple-700 shadow-lg border-t border-purple-600 transition-all duration-300 ease-in-out ${
+      <div className={`md:hidden absolute top-16 left-0 right-0 bg-theme-secondary shadow-theme border-t border-theme-primary transition-all duration-300 ease-in-out ${
         isMenuOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform -translate-y-2 pointer-events-none'
       }`}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
@@ -98,14 +100,17 @@ const Navbar = () => {
             <a
               key={link.name}
               href={link.href}
-              className="text-white hover:text-purple-200 block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200"
+              className="text-theme-inverse hover:text-purple-200 block px-3 py-2 rounded-md text-base font-medium transition-theme"
               onClick={closeMenu}
             >
               {link.name}
             </a>
           ))}
-          <div className="pt-4">
-            <button className="w-full bg-white text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200">
+          <div className="pt-4 space-y-2">
+            <div className="flex justify-center">
+              <ThemeToggle />
+            </div>
+            <button className="w-full btn-theme-secondary px-4 py-2 rounded-md text-sm font-medium">
               Get Started
             </button>
           </div>

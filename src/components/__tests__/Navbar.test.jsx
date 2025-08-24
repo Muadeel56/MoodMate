@@ -1,32 +1,26 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import Navbar from '../Navbar';
+import { ThemeProvider } from '../../contexts/ThemeContext';
 
-// Mock React hooks
-vi.mock('react', async () => {
-  const actual = await vi.importActual('react');
-  return {
-    ...actual,
-    useState: vi.fn(),
-  };
-});
-
-// Mock document.body
-Object.defineProperty(document.body, 'style', {
-  value: {},
-  writable: true,
-});
+const renderWithTheme = (component) => {
+  return render(
+    <ThemeProvider>
+      {component}
+    </ThemeProvider>
+  );
+};
 
 describe('Navbar Component', () => {
   it('renders the MoodMate logo and branding', () => {
-    render(<Navbar />);
+    renderWithTheme(<Navbar />);
     
     expect(screen.getByText('MoodMate')).toBeInTheDocument();
     expect(screen.getByText('M')).toBeInTheDocument();
   });
 
   it('renders navigation links', () => {
-    render(<Navbar />);
+    renderWithTheme(<Navbar />);
     
     expect(screen.getByText('Home')).toBeInTheDocument();
     expect(screen.getByText('Features')).toBeInTheDocument();
@@ -35,27 +29,34 @@ describe('Navbar Component', () => {
   });
 
   it('renders the Get Started button', () => {
-    render(<Navbar />);
+    renderWithTheme(<Navbar />);
     
     expect(screen.getByText('Get Started')).toBeInTheDocument();
   });
 
+  it('renders theme toggle button', () => {
+    renderWithTheme(<Navbar />);
+    
+    const themeToggle = screen.getByLabelText(/switch to/i);
+    expect(themeToggle).toBeInTheDocument();
+  });
+
   it('has proper accessibility attributes', () => {
-    render(<Navbar />);
+    renderWithTheme(<Navbar />);
     
     const menuButton = screen.getByLabelText('Toggle menu');
     expect(menuButton).toBeInTheDocument();
   });
 
   it('applies correct CSS classes for styling', () => {
-    const { container } = render(<Navbar />);
+    const { container } = renderWithTheme(<Navbar />);
     
     const nav = container.querySelector('nav');
     expect(nav).toHaveClass('bg-gradient-to-r', 'from-purple-600', 'to-blue-600', 'shadow-lg');
   });
 
   it('has mobile menu with dropdown functionality', () => {
-    render(<Navbar />);
+    renderWithTheme(<Navbar />);
     
     const menuButton = screen.getByLabelText('Toggle menu');
     expect(menuButton).toBeInTheDocument();
