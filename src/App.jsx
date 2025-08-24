@@ -1,7 +1,6 @@
 import React from 'react';
-import Navbar from './components/Navbar';
-import { ThemeProvider } from './contexts/ThemeContext';
-import ThemeDemo from './components/ThemeDemo';
+import { Navbar, ThemeDemo } from './components';
+import { ThemeProvider } from './contexts';
 
 function App() {
   return (
