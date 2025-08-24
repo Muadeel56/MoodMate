@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { generateCSSVariables } from '../styles/theme';
 
 const ThemeContext = createContext();
 
@@ -24,9 +25,21 @@ export const ThemeProvider = ({ children }) => {
     setIsDark(prev => !prev);
   };
 
+  // Apply theme CSS variables to document root
+  const applyTheme = (mode) => {
+    const variables = generateCSSVariables(mode);
+    
+    // Apply CSS variables to document root
+    Object.entries(variables).forEach(([property, value]) => {
+      document.documentElement.style.setProperty(property, value);
+    });
+  };
+
   useEffect(() => {
+    const mode = isDark ? 'dark' : 'light';
+    
     // Update localStorage when theme changes
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    localStorage.setItem('theme', mode);
     
     // Update document class for Tailwind dark mode
     if (isDark) {
@@ -36,12 +49,16 @@ export const ThemeProvider = ({ children }) => {
     }
     
     // Update data-theme attribute for CSS variables
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', mode);
+    
+    // Apply theme CSS variables
+    applyTheme(mode);
   }, [isDark]);
 
   const value = {
     isDark,
     toggleTheme,
+    theme: isDark ? 'dark' : 'light'
   };
 
   return (
