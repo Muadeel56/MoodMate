@@ -1,5 +1,6 @@
+import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ThemeToggle from '../ThemeToggle';
 import { ThemeProvider } from '../../contexts/ThemeContext';
 
@@ -10,22 +11,12 @@ const localStorageMock = {
   removeItem: vi.fn(),
   clear: vi.fn(),
 };
-global.localStorage = localStorageMock;
-
-// Mock matchMedia
-Object.defineProperty(window, 'matchMedia', {
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
   writable: true,
-  value: vi.fn().mockImplementation(query => ({
-    matches: false,
-    media: query,
-    onchange: null,
-    addListener: vi.fn(),
-    removeListener: vi.fn(),
-    addEventListener: vi.fn(),
-    removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn(),
-  })),
 });
+
+
 
 const renderWithTheme = (component) => {
   return render(

@@ -1,3 +1,4 @@
+import React from 'react';
 import Navbar from './components/Navbar';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ThemeDemo from './components/ThemeDemo';
