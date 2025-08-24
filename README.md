@@ -282,7 +282,7 @@ MoodMate/
 │   ├── services/      # API services
 │   ├── constants/     # App constants
 │   ├── styles/        # Custom styles
-│   ├── types/         # TypeScript types (if using TS)
+
 │   ├── assets/        # Static assets
 │   ├── App.jsx        # Main app component
 │   ├── main.jsx       # App entry point

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import ThemeToggle from './ThemeToggle';
+import { ThemeToggle } from './';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
