@@ -1,5 +1,5 @@
 import React from 'react';
-import { Navbar, ThemeDemo } from './components';
+import { Navbar, ThemeDemo, Footer } from './components';
 import { Header, Hero } from './sections';
 import { ThemeProvider } from './contexts';
 
@@ -29,6 +29,7 @@ function App() {
             </p>
           </section>
         </main>
+        <Footer />
       </div>
     </ThemeProvider>
   )
