@@ -99,4 +99,11 @@ body {
 .bg-secondary { background-color: var(--bg-secondary); }
 .bg-tertiary { background-color: var(--bg-tertiary); }
 
-.border-primary { border-color: var(--border-color); } 
+.border-primary { border-color: var(--border-color); }
+
+/* Theme transition utility */
+.transition-theme {
+  transition: color var(--transition-normal), 
+              background-color var(--transition-normal), 
+              border-color var(--transition-normal);
+} 
