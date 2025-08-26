@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Home, BookOpen, Music, Settings, Menu, X } from 'lucide-react';
+import { Home, BookOpen, Music, Settings, Menu, X, User } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './';
 import { themeClasses, gradients } from '../styles/theme';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -15,10 +17,9 @@ const Navbar = () => {
   };
 
   const navigationLinks = [
-    { name: 'Home', href: '#home', icon: Home },
-    { name: 'Journal', href: '#journal', icon: BookOpen },
-    { name: 'Music', href: '#music', icon: Music },
-    { name: 'Settings', href: '#settings', icon: Settings },
+    { name: 'Home', href: '/', icon: Home },
+    { name: 'About', href: '/about', icon: BookOpen },
+    { name: 'Dashboard', href: '/dashboard', icon: User },
   ];
 
   return (
@@ -27,7 +28,7 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <div className="flex-shrink-0 flex items-center">
-            <div className="flex items-center space-x-3">
+            <Link to="/" className="flex items-center space-x-3">
               <div className={`w-10 h-10 ${gradients.navbar} rounded-xl flex items-center justify-center shadow-lg`}>
                 <span className="text-white font-bold text-xl">M</span>
               </div>
@@ -35,7 +36,7 @@ const Navbar = () => {
                 <span className={`${themeClasses.text.primary} font-bold text-xl leading-tight`}>MoodMate</span>
                 <span className={`${themeClasses.text.secondary} text-xs font-medium`}>Your Mood Companion</span>
               </div>
-            </div>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
@@ -43,16 +44,17 @@ const Navbar = () => {
             <div className="ml-10 flex items-baseline space-x-6">
               {navigationLinks.map((link) => {
                 const IconComponent = link.icon;
+                const isActive = location.pathname === link.href;
                 return (
-                  <a
+                  <Link
                     key={link.name}
-                    href={link.href}
-                    className={`${themeClasses.text.secondary} hover:text-purple-600 dark:hover:text-purple-400 px-4 py-2 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} hover:bg-purple-50 dark:hover:bg-purple-900/20 flex items-center space-x-2 group`}
+                    to={link.href}
+                    className={`${isActive ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20' : themeClasses.text.secondary + ' hover:text-purple-600 dark:hover:text-purple-400'} px-4 py-2 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} hover:bg-purple-50 dark:hover:bg-purple-900/20 flex items-center space-x-2 group`}
                     onClick={closeMenu}
                   >
                     <IconComponent className="h-5 w-5 group-hover:scale-110 transition-transform duration-200" />
                     <span>{link.name}</span>
-                  </a>
+                  </Link>
                 );
               })}
             </div>
@@ -61,9 +63,12 @@ const Navbar = () => {
           {/* CTA Button and Theme Toggle */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            <button className={`${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-2 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg hover:shadow-xl`}>
+            <Link 
+              to="/login" 
+              className={`${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-2 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg hover:shadow-xl`}
+            >
               Get Started
-            </button>
+            </Link>
           </div>
 
           {/* Mobile menu button */}
@@ -96,22 +101,27 @@ const Navbar = () => {
         <div className="px-4 pt-4 pb-6 space-y-2">
           {navigationLinks.map((link) => {
             const IconComponent = link.icon;
+            const isActive = location.pathname === link.href;
             return (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
-                className={`${themeClasses.text.secondary} hover:text-purple-600 dark:hover:text-purple-400 block px-4 py-3 rounded-lg text-base font-medium ${themeClasses.transitions.theme} hover:bg-purple-50 dark:hover:bg-purple-900/20 flex items-center space-x-3`}
+                to={link.href}
+                className={`${isActive ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20' : themeClasses.text.secondary + ' hover:text-purple-600 dark:hover:text-purple-400'} block px-4 py-3 rounded-lg text-base font-medium ${themeClasses.transitions.theme} hover:bg-purple-50 dark:hover:bg-purple-900/20 flex items-center space-x-3`}
                 onClick={closeMenu}
               >
                 <IconComponent className="h-5 w-5" />
                 <span>{link.name}</span>
-              </a>
+              </Link>
             );
           })}
           <div className={`pt-4 border-t ${themeClasses.borders.primary}/50`}>
-            <button className={`w-full ${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-3 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg`}>
+            <Link 
+              to="/login" 
+              className={`w-full ${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-3 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg block text-center`}
+              onClick={closeMenu}
+            >
               Get Started
-            </button>
+            </Link>
           </div>
         </div>
       </div>
