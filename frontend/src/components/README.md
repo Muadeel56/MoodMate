@@ -8,7 +8,7 @@ This directory contains reusable UI components that can be used across multiple 
 - `Navbar.jsx` - Navigation bar component
 - `ThemeDemo.jsx` - Theme demonstration component
 - `ThemeToggle.jsx` - Theme toggle button component
-- `Footer.jsx` - Footer component
+- `Footer.jsx` - Footer component.
 
 ### Routing Components
 - `ProtectedRoute.jsx` - Route protection component
