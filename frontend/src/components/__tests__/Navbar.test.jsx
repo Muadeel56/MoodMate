@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import Navbar from '../Navbar';
-import { ThemeProvider } from '../../contexts/ThemeContext';
+import { ThemeProvider, AuthProvider } from '../../contexts';
 
 // Mock localStorage
 const localStorageMock = {
@@ -21,7 +21,9 @@ const renderWithTheme = (component) => {
   return render(
     <MemoryRouter>
       <ThemeProvider>
-        {component}
+        <AuthProvider>
+          {component}
+        </AuthProvider>
       </ThemeProvider>
     </MemoryRouter>
   );

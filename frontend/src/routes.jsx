@@ -1,13 +1,21 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Home, About, Dashboard, Login, NotFound } from './pages';
+import { Home, About, Dashboard, Login, Register, NotFound } from './pages';
 import { ProtectedRoute, PageTransition } from './components';
+import { useAuth } from './contexts';
 
 // Route configuration
 const AppRoutes = () => {
-  // For demo purposes, we'll set authentication to false
-  // In a real app, this would come from your auth context/state
-  const isAuthenticated = false;
+  const { isAuthenticated, loading } = useAuth();
+
+  // Show loading spinner while checking authentication
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -15,6 +23,7 @@ const AppRoutes = () => {
       <Route path="/" element={<PageTransition><Home /></PageTransition>} />
       <Route path="/about" element={<PageTransition><About /></PageTransition>} />
       <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+      <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
       
       {/* Protected Routes */}
       <Route 

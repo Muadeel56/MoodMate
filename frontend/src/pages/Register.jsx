@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts';
 import { themeClasses } from '../styles/theme';
 
-function Login() {
+function Register() {
   const [formData, setFormData] = useState({
+    name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const { login, error: authError, clearError } = useAuth();
-
-  const from = location.state?.from?.pathname || '/dashboard';
+  const { register, error: authError, clearError } = useAuth();
 
   // Clear auth errors when component mounts
   useEffect(() => {
@@ -23,6 +22,13 @@ function Login() {
 
   const validateForm = () => {
     const newErrors = {};
+
+    // Name validation
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (formData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,6 +41,15 @@ function Login() {
     // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    // Confirm password validation
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
     }
 
     setErrors(newErrors);
@@ -67,13 +82,13 @@ function Login() {
     setIsLoading(true);
     
     try {
-      const result = await login(formData.email, formData.password);
+      const result = await register(formData.name, formData.email, formData.password);
       
       if (result.success) {
-        navigate(from, { replace: true });
+        navigate('/dashboard');
       }
     } catch (err) {
-      console.error('Login error:', err);
+      console.error('Registration error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -84,7 +99,7 @@ function Login() {
       <section className="py-16">
         <div className="max-w-md mx-auto">
           <h1 className={`text-3xl font-bold ${themeClasses.text.primary} mb-6 text-center ${themeClasses.transitions.theme}`}>
-            Welcome Back
+            Create Account
           </h1>
           
           <div className={`p-8 rounded-lg ${themeClasses.backgrounds.secondary} ${themeClasses.transitions.theme}`}>
@@ -95,6 +110,29 @@ function Login() {
             )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label 
+                  htmlFor="name" 
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-2`}
+                >
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border rounded-md ${themeClasses.backgrounds.primary} ${themeClasses.text.primary} border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${themeClasses.transitions.theme} ${
+                    errors.name ? 'border-red-500' : ''
+                  }`}
+                  placeholder="Enter your full name"
+                />
+                {errors.name && (
+                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                )}
+              </div>
+              
               <div>
                 <label 
                   htmlFor="email" 
@@ -141,23 +179,46 @@ function Login() {
                 )}
               </div>
               
+              <div>
+                <label 
+                  htmlFor="confirmPassword" 
+                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-2`}
+                >
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className={`w-full px-3 py-2 border rounded-md ${themeClasses.backgrounds.primary} ${themeClasses.text.primary} border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${themeClasses.transitions.theme} ${
+                    errors.confirmPassword ? 'border-red-500' : ''
+                  }`}
+                  placeholder="Confirm your password"
+                />
+                {errors.confirmPassword && (
+                  <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
+                )}
+              </div>
+              
               <button
                 type="submit"
                 disabled={isLoading}
                 className={`w-full py-2 px-4 rounded-md ${themeClasses.backgrounds.accent} ${themeClasses.text.onAccent} font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${themeClasses.transitions.theme}`}
               >
-                {isLoading ? 'Signing in...' : 'Sign In'}
+                {isLoading ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
             
             <div className="mt-6 text-center">
               <p className={`text-sm ${themeClasses.text.secondary} ${themeClasses.transitions.theme}`}>
-                Don't have an account?{' '}
+                Already have an account?{' '}
                 <Link 
-                  to="/register" 
+                  to="/login" 
                   className={`text-blue-500 hover:text-blue-600 underline ${themeClasses.transitions.theme}`}
                 >
-                  Sign up
+                  Sign in
                 </Link>
               </p>
             </div>
@@ -168,4 +229,4 @@ function Login() {
   );
 }
 
-export default Login; 
+export default Register; 
