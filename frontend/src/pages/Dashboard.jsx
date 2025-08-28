@@ -1,13 +1,28 @@
 import React from 'react';
+import { useAuth } from '../contexts';
 import { themeClasses } from '../styles/theme';
 
 function Dashboard() {
+  const { user } = useAuth();
+
   return (
     <main className="container mx-auto px-4 py-8">
       <section className="py-16">
-        <h1 className={`text-4xl font-bold ${themeClasses.text.primary} mb-6 ${themeClasses.transitions.theme}`}>
-          Your Mood Dashboard
-        </h1>
+        <div className="flex items-center space-x-4 mb-6">
+          <img 
+            src={user?.avatar} 
+            alt={user?.name} 
+            className="w-16 h-16 rounded-full border-4 border-purple-200"
+          />
+          <div>
+            <h1 className={`text-4xl font-bold ${themeClasses.text.primary} ${themeClasses.transitions.theme}`}>
+              Welcome back, {user?.name}!
+            </h1>
+            <p className={`text-lg ${themeClasses.text.secondary} ${themeClasses.transitions.theme}`}>
+              Let's track your mood today
+            </p>
+          </div>
+        </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Quick Stats Cards */}

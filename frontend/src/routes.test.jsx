@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi } from 'vitest';
-import { ThemeProvider } from './contexts';
+import { ThemeProvider, AuthProvider } from './contexts';
 import AppRoutes from './routes';
 
 // Mock the page components
@@ -11,6 +11,7 @@ vi.mock('./pages', () => ({
   About: () => <div data-testid="about-page">About Page</div>,
   Dashboard: () => <div data-testid="dashboard-page">Dashboard Page</div>,
   Login: () => <div data-testid="login-page">Login Page</div>,
+  Register: () => <div data-testid="register-page">Register Page</div>,
   NotFound: () => <div data-testid="not-found-page">404 Page</div>,
 }));
 
@@ -25,7 +26,9 @@ const renderWithRouter = (route) => {
   return render(
     <ThemeProvider>
       <MemoryRouter initialEntries={[route]}>
-        <AppRoutes />
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
       </MemoryRouter>
     </ThemeProvider>
   );

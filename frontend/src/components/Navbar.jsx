@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Home, BookOpen, Music, Settings, Menu, X, User } from 'lucide-react';
+import { Home, BookOpen, Music, Settings, Menu, X, User, LogOut } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { ThemeToggle } from './';
 import { themeClasses, gradients } from '../styles/theme';
+import { useAuth } from '../contexts';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, isAuthenticated, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -63,12 +65,34 @@ const Navbar = () => {
           {/* CTA Button and Theme Toggle */}
           <div className="hidden md:flex items-center space-x-4">
             <ThemeToggle />
-            <Link 
-              to="/login" 
-              className={`${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-2 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg hover:shadow-xl`}
-            >
-              Get Started
-            </Link>
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center space-x-2">
+                  <img 
+                    src={user?.avatar} 
+                    alt={user?.name} 
+                    className="w-8 h-8 rounded-full border-2 border-purple-200"
+                  />
+                  <span className={`text-sm font-medium ${themeClasses.text.primary}`}>
+                    {user?.name}
+                  </span>
+                </div>
+                <button
+                  onClick={logout}
+                  className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium ${themeClasses.text.secondary} hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ${themeClasses.transitions.theme}`}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link 
+                to="/login" 
+                className={`${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-2 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg hover:shadow-xl`}
+              >
+                Get Started
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
@@ -115,13 +139,38 @@ const Navbar = () => {
             );
           })}
           <div className={`pt-4 border-t ${themeClasses.borders.primary}/50`}>
-            <Link 
-              to="/login" 
-              className={`w-full ${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-3 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg block text-center`}
-              onClick={closeMenu}
-            >
-              Get Started
-            </Link>
+            {isAuthenticated ? (
+              <div className="space-y-3">
+                <div className="flex items-center space-x-3 px-4 py-2">
+                  <img 
+                    src={user?.avatar} 
+                    alt={user?.name} 
+                    className="w-8 h-8 rounded-full border-2 border-purple-200"
+                  />
+                  <span className={`text-sm font-medium ${themeClasses.text.primary}`}>
+                    {user?.name}
+                  </span>
+                </div>
+                <button
+                  onClick={() => {
+                    logout();
+                    closeMenu();
+                  }}
+                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg text-sm font-medium ${themeClasses.text.secondary} hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 ${themeClasses.transitions.theme}`}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link 
+                to="/login" 
+                className={`w-full ${gradients.secondary} ${gradients.secondaryHover} text-white px-6 py-3 rounded-lg text-sm font-medium ${themeClasses.transitions.theme} transform hover:scale-105 shadow-lg block text-center`}
+                onClick={closeMenu}
+              >
+                Get Started
+              </Link>
+            )}
           </div>
         </div>
       </div>
