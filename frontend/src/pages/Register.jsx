@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts';
 import { themeClasses } from '../styles/theme';
+import { PasswordStrengthIndicator, SocialLogin } from '../components';
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -12,6 +13,7 @@ function Register() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const { register, error: authError, clearError } = useAuth();
 
@@ -41,8 +43,8 @@ function Register() {
     // Password validation
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
     }
 
     // Confirm password validation
@@ -89,6 +91,30 @@ function Register() {
       }
     } catch (err) {
       console.error('Registration error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: Implement Google OAuth
+      console.log('Google login clicked');
+    } catch (err) {
+      console.error('Google login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: Implement GitHub OAuth
+      console.log('GitHub login clicked');
+    } catch (err) {
+      console.error('GitHub login error:', err);
     } finally {
       setIsLoading(false);
     }
@@ -177,6 +203,7 @@ function Register() {
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                 )}
+                <PasswordStrengthIndicator password={formData.password} />
               </div>
               
               <div>
@@ -210,6 +237,12 @@ function Register() {
                 {isLoading ? 'Creating account...' : 'Create Account'}
               </button>
             </form>
+
+            <SocialLogin 
+              onGoogleLogin={handleGoogleLogin}
+              onGithubLogin={handleGithubLogin}
+              isLoading={isLoading}
+            />
             
             <div className="mt-6 text-center">
               <p className={`text-sm ${themeClasses.text.secondary} ${themeClasses.transitions.theme}`}>

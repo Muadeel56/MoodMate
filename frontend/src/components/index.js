@@ -7,4 +7,7 @@ export { default as ProtectedRoute } from './ProtectedRoute';
 export { default as PageTransition } from './PageTransition';
 export { default as LoadingSpinner } from './LoadingSpinner';
 export { default as PageLoading } from './PageLoading';
-export { default as TransitionDemo } from './TransitionDemo'; 
+export { default as TransitionDemo } from './TransitionDemo';
+export { default as PasswordStrengthIndicator } from './PasswordStrengthIndicator';
+export { default as SocialLogin } from './SocialLogin';
+export { default as ForgotPassword } from './ForgotPassword'; 
