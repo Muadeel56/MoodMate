@@ -81,39 +81,31 @@ function Login() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Implement Google OAuth
-      console.log('Google login clicked');
-    } catch (err) {
-      console.error('Google login error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleGithubLogin = async () => {
-    setIsLoading(true);
-    try {
-      // TODO: Implement GitHub OAuth
-      console.log('GitHub login clicked');
-    } catch (err) {
-      console.error('GitHub login error:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Social login functionality removed - not implemented
 
   const handleForgotPassword = async (email) => {
     setIsLoading(true);
     try {
-      // TODO: Implement forgot password API call
-      console.log('Forgot password for:', email);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('http://localhost:8000/api/v1/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Failed to send reset email');
+      }
+
+      // In development, show the token for testing
+      if (process.env.NODE_ENV === 'development' && data.reset_token) {
+        console.log('Password reset token (development only):', data.reset_token);
+      }
     } catch (err) {
-      throw new Error('Failed to send reset email');
+      throw new Error(err.message || 'Failed to send reset email');
     } finally {
       setIsLoading(false);
     }
@@ -216,11 +208,7 @@ function Login() {
               </button>
             </form>
 
-            <SocialLogin 
-              onGoogleLogin={handleGoogleLogin}
-              onGithubLogin={handleGithubLogin}
-              isLoading={isLoading}
-            />
+            {/* Social login removed - not implemented */}
             
             <div className="mt-6 text-center">
               <p className={`text-sm ${themeClasses.text.secondary} ${themeClasses.transitions.theme}`}>

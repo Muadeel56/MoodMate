@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import os
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
@@ -74,6 +75,9 @@ def register(user_data: UserCreate, db: Session = Depends(get_db)):
     )
     db.add(db_refresh_token)
     db.commit()
+    
+    # Log welcome message (email service removed)
+    print(f"Welcome email would be sent to {user_data.email} for user {user_data.name}")
     
     return {
         "access_token": access_token,
@@ -230,7 +234,7 @@ def forgot_password(request: PasswordResetRequest, db: Session = Depends(get_db)
     # Create password reset token
     reset_token = create_password_reset_token(request.email)
     
-    # Store token in database (in production, you'd send this via email)
+    # Store token in database
     from ..models import PasswordResetToken
     db_token = PasswordResetToken(
         email=request.email,
@@ -245,12 +249,17 @@ def forgot_password(request: PasswordResetRequest, db: Session = Depends(get_db)
         db.rollback()
         return {"message": "If the email exists, a password reset link has been sent"}
     
-    # In production, send email here
-    # For now, we'll return the token (in production, this would be sent via email)
-    return {
-        "message": "If the email exists, a password reset link has been sent",
-        "reset_token": reset_token  # Remove this in production
-    }
+    # Log password reset request (email service removed)
+    print(f"Password reset email would be sent to {request.email}")
+    print(f"Reset token: {reset_token}")
+    
+    # In development, return token for testing
+    if os.getenv("ENVIRONMENT") == "development":
+        return {
+            "message": "If the email exists, a password reset link has been sent",
+            "reset_token": reset_token  # Only in development
+        }
+    return {"message": "If the email exists, a password reset link has been sent"}
 
 @router.post("/reset-password")
 def reset_password(reset_data: PasswordReset, db: Session = Depends(get_db)):
