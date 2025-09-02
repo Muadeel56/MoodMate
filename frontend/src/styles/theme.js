@@ -214,7 +214,8 @@ export const themeClasses = {
     secondary: 'bg-theme-secondary',
     tertiary: 'bg-theme-tertiary',
     card: 'bg-theme-card',
-    navbar: 'bg-theme-navbar'
+    navbar: 'bg-theme-navbar',
+    accent: 'bg-blue-500'
   },
   
   // Text classes
@@ -222,7 +223,8 @@ export const themeClasses = {
     primary: 'text-theme-primary',
     secondary: 'text-theme-secondary',
     tertiary: 'text-theme-tertiary',
-    inverse: 'text-theme-inverse'
+    inverse: 'text-theme-inverse',
+    onAccent: 'text-white'
   },
   
   // Border classes

@@ -27,7 +27,7 @@ The project now includes smooth page transitions powered by Framer Motion. Here'
 
 ### PageTransition Component
 
-The `PageTransition` component provides smooth animations when navigating between pages.
+The `PageTransition` component provides smooth animations when navigating between pages
 
 #### Basic Usage
 ```jsx

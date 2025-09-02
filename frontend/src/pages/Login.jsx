@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../contexts';
 import { themeClasses } from '../styles/theme';
+import { SocialLogin, ForgotPassword } from '../components';
 
 function Login() {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ function Login() {
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { login, error: authError, clearError } = useAuth();
@@ -79,6 +81,60 @@ function Login() {
     }
   };
 
+  const handleGoogleLogin = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: Implement Google OAuth
+      console.log('Google login clicked');
+    } catch (err) {
+      console.error('Google login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGithubLogin = async () => {
+    setIsLoading(true);
+    try {
+      // TODO: Implement GitHub OAuth
+      console.log('GitHub login clicked');
+    } catch (err) {
+      console.error('GitHub login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (email) => {
+    setIsLoading(true);
+    try {
+      // TODO: Implement forgot password API call
+      console.log('Forgot password for:', email);
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (err) {
+      throw new Error('Failed to send reset email');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (showForgotPassword) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <section className="py-16">
+          <div className="max-w-md mx-auto">
+            <ForgotPassword
+              onSubmit={handleForgotPassword}
+              onCancel={() => setShowForgotPassword(false)}
+              isLoading={isLoading}
+            />
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
     <main className="container mx-auto px-4 py-8">
       <section className="py-16">
@@ -140,6 +196,16 @@ function Login() {
                   <p className="mt-1 text-sm text-red-600">{errors.password}</p>
                 )}
               </div>
+
+              <div className="flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className={`text-sm text-blue-500 hover:text-blue-600 underline ${themeClasses.transitions.theme}`}
+                >
+                  Forgot your password?
+                </button>
+              </div>
               
               <button
                 type="submit"
@@ -149,6 +215,12 @@ function Login() {
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </button>
             </form>
+
+            <SocialLogin 
+              onGoogleLogin={handleGoogleLogin}
+              onGithubLogin={handleGithubLogin}
+              isLoading={isLoading}
+            />
             
             <div className="mt-6 text-center">
               <p className={`text-sm ${themeClasses.text.secondary} ${themeClasses.transitions.theme}`}>
