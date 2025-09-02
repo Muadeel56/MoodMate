@@ -1,198 +1,232 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 
-// Mock localStorage
-const localStorageMock = {
-  getItem: vi.fn(),
-  setItem: vi.fn(),
-  removeItem: vi.fn(),
-  clear: vi.fn(),
-};
-global.localStorage = localStorageMock;
+// Mock fetch
+global.fetch = jest.fn();
 
-// Test component to access auth context
+// Test component that uses the auth context
 const TestComponent = () => {
-  const { user, isAuthenticated, login, register, logout, error, loading } = useAuth();
+  const { user, isAuthenticated, loading, error, login, register, logout } = useAuth();
   
   return (
     <div>
-      <div data-testid="user">{user ? JSON.stringify(user) : 'no-user'}</div>
-      <div data-testid="isAuthenticated">{isAuthenticated.toString()}</div>
       <div data-testid="loading">{loading.toString()}</div>
-      <div data-testid="error">{error || 'no-error'}</div>
-      <button data-testid="login" onClick={() => login('test@example.com', 'password')}>
-        Login
-      </button>
-      <button data-testid="register" onClick={() => register('Test User', 'test@example.com', 'password')}>
-        Register
-      </button>
-      <button data-testid="logout" onClick={logout}>
-        Logout
-      </button>
+      <div data-testid="authenticated">{isAuthenticated.toString()}</div>
+      <div data-testid="user">{user ? user.name : 'No user'}</div>
+      <div data-testid="error">{error || 'No error'}</div>
+      <button onClick={() => login('test@example.com', 'password')}>Login</button>
+      <button onClick={() => register('Test User', 'test@example.com', 'password')}>Register</button>
+      <button onClick={() => logout()}>Logout</button>
     </div>
   );
 };
 
-// Wrapper component for testing
-const TestWrapper = ({ children }) => (
-  <BrowserRouter>
-    <AuthProvider>
-      {children}
-    </AuthProvider>
-  </BrowserRouter>
-);
+const renderWithRouter = (component) => {
+  return render(
+    <BrowserRouter>
+      {component}
+    </BrowserRouter>
+  );
+};
 
 describe('AuthContext', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
-    localStorageMock.getItem.mockReturnValue(null);
+    // Clear localStorage before each test
+    localStorage.clear();
+    // Clear fetch mock
+    fetch.mockClear();
   });
 
-  describe('Initial State', () => {
-    it('should start with no user and not authenticated', async () => {
-      render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
-      );
+  it('should provide initial state', () => {
+    renderWithRouter(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
 
-      // Wait for initial loading to complete
-      await waitFor(() => {
-        expect(screen.getByTestId('loading')).toHaveTextContent('false');
-      });
+    expect(screen.getByTestId('loading')).toHaveTextContent('true');
+    expect(screen.getByTestId('authenticated')).toHaveTextContent('false');
+    expect(screen.getByTestId('user')).toHaveTextContent('No user');
+    expect(screen.getByTestId('error')).toHaveTextContent('No error');
+  });
 
-      expect(screen.getByTestId('user')).toHaveTextContent('no-user');
-      expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('false');
+  it('should handle successful login', async () => {
+    const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' };
+    const mockResponse = {
+      access_token: 'access_token_123',
+      refresh_token: 'refresh_token_123',
+      user: mockUser
+    };
+
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse
     });
 
-    it('should load user from localStorage if available', async () => {
-      const mockUser = { id: '1', name: 'Test User', email: 'test@example.com' };
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
+    renderWithRouter(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
 
-      render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
-      );
+    // Wait for initial loading to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('false');
+    });
 
-      await waitFor(() => {
-        expect(screen.getByTestId('loading')).toHaveTextContent('false');
-      });
+    // Click login button
+    act(() => {
+      screen.getByText('Login').click();
+    });
 
-      expect(screen.getByTestId('user')).toHaveTextContent(JSON.stringify(mockUser));
-      expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
+    // Wait for login to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('true');
+      expect(screen.getByTestId('user')).toHaveTextContent('Test User');
+    });
+
+    // Check if tokens were stored
+    expect(localStorage.getItem('moodmate_token')).toBe('access_token_123');
+    expect(localStorage.getItem('moodmate_refresh_token')).toBe('refresh_token_123');
+    expect(localStorage.getItem('moodmate_user')).toBe(JSON.stringify(mockUser));
+  });
+
+  it('should handle login failure', async () => {
+    const mockError = { detail: 'Invalid credentials' };
+    
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => mockError
+    });
+
+    renderWithRouter(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    // Wait for initial loading to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('false');
+    });
+
+    // Click login button
+    act(() => {
+      screen.getByText('Login').click();
+    });
+
+    // Wait for error to appear
+    await waitFor(() => {
+      expect(screen.getByTestId('error')).toHaveTextContent('Invalid credentials');
+    });
+
+    // Check that user is not authenticated
+    expect(screen.getByTestId('authenticated')).toHaveTextContent('false');
+  });
+
+  it('should handle successful registration', async () => {
+    const mockUser = { id: 1, name: 'Test User', email: 'test@example.com' };
+    const mockResponse = {
+      access_token: 'access_token_123',
+      refresh_token: 'refresh_token_123',
+      user: mockUser
+    };
+
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockResponse
+    });
+
+    renderWithRouter(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    // Wait for initial loading to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('false');
+    });
+
+    // Click register button
+    act(() => {
+      screen.getByText('Register').click();
+    });
+
+    // Wait for registration to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('true');
+      expect(screen.getByTestId('user')).toHaveTextContent('Test User');
     });
   });
 
-  describe('Login Functionality', () => {
-    it('should login successfully', async () => {
-      render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
-      );
+  it('should handle logout', async () => {
+    // Set up initial authenticated state
+    localStorage.setItem('moodmate_token', 'access_token_123');
+    localStorage.setItem('moodmate_refresh_token', 'refresh_token_123');
+    localStorage.setItem('moodmate_user', JSON.stringify({ name: 'Test User' }));
 
-      // Wait for initial loading to complete
-      await waitFor(() => {
-        expect(screen.getByTestId('loading')).toHaveTextContent('false');
-      });
-
-      const loginButton = screen.getByTestId('login');
-      
-      await act(async () => {
-        fireEvent.click(loginButton);
-      });
-
-      // Wait for login to complete
-      await waitFor(() => {
-        expect(screen.getByTestId('loading')).toHaveTextContent('false');
-      }, { timeout: 3000 });
-
-      const userData = JSON.parse(screen.getByTestId('user').textContent);
-      expect(userData.email).toBe('test@example.com');
-      expect(userData.name).toBe('test');
-      expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('moodmate_user', expect.any(String));
+    // Mock logout API call
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ message: 'Successfully logged out' })
     });
+
+    renderWithRouter(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
+
+    // Wait for initial loading to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('false');
+    });
+
+    // Should be authenticated initially
+    expect(screen.getByTestId('authenticated')).toHaveTextContent('true');
+
+    // Click logout button
+    act(() => {
+      screen.getByText('Logout').click();
+    });
+
+    // Wait for logout to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('authenticated')).toHaveTextContent('false');
+      expect(screen.getByTestId('user')).toHaveTextContent('No user');
+    });
+
+    // Check that tokens were cleared
+    expect(localStorage.getItem('moodmate_token')).toBeNull();
+    expect(localStorage.getItem('moodmate_refresh_token')).toBeNull();
+    expect(localStorage.getItem('moodmate_user')).toBeNull();
   });
 
-  describe('Register Functionality', () => {
-    it('should register successfully', async () => {
-      render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
-      );
+  it('should handle network errors gracefully', async () => {
+    fetch.mockRejectedValueOnce(new Error('Network error'));
 
-      await waitFor(() => {
-        expect(screen.getByTestId('loading')).toHaveTextContent('false');
-      });
+    renderWithRouter(
+      <AuthProvider>
+        <TestComponent />
+      </AuthProvider>
+    );
 
-      const registerButton = screen.getByTestId('register');
-      
-      await act(async () => {
-        fireEvent.click(registerButton);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByTestId('loading')).toHaveTextContent('false');
-      }, { timeout: 3000 });
-
-      const userData = JSON.parse(screen.getByTestId('user').textContent);
-      expect(userData.email).toBe('test@example.com');
-      expect(userData.name).toBe('Test User');
-      expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('moodmate_user', expect.any(String));
+    // Wait for initial loading to complete
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('false');
     });
-  });
 
-  describe('Logout Functionality', () => {
-    it('should logout successfully', async () => {
-      // Start with a logged-in user
-      const mockUser = { id: '1', name: 'Test User', email: 'test@example.com' };
-      localStorageMock.getItem.mockReturnValue(JSON.stringify(mockUser));
-
-      render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('true');
-      });
-
-      const logoutButton = screen.getByTestId('logout');
-      
-      await act(async () => {
-        fireEvent.click(logoutButton);
-      });
-
-      expect(screen.getByTestId('user')).toHaveTextContent('no-user');
-      expect(screen.getByTestId('isAuthenticated')).toHaveTextContent('false');
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('moodmate_user');
+    // Click login button
+    act(() => {
+      screen.getByText('Login').click();
     });
-  });
 
-  describe('Error Handling', () => {
-    it('should handle localStorage errors gracefully', async () => {
-      localStorageMock.getItem.mockImplementation(() => {
-        throw new Error('localStorage error');
-      });
-
-      render(
-        <TestWrapper>
-          <TestComponent />
-        </TestWrapper>
-      );
-
-      await waitFor(() => {
-        expect(screen.getByTestId('loading')).toHaveTextContent('false');
-      });
-
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('moodmate_user');
+    // Wait for error to appear
+    await waitFor(() => {
+      expect(screen.getByTestId('error')).toHaveTextContent('Network error. Please check your credentials.');
     });
   });
 }); 

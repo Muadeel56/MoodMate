@@ -1,44 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts';
 import { themeClasses } from '../styles/theme';
-import { PasswordStrengthIndicator, SocialLogin } from '../components';
+import { PasswordStrengthIndicator } from '../components';
 
-function Register() {
+function ResetPassword() {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
     password: '',
     confirmPassword: ''
   });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { register, error: authError, clearError } = useAuth();
+  const { clearError } = useAuth();
+
+  const token = searchParams.get('token');
 
   // Clear auth errors when component mounts
   useEffect(() => {
     clearError();
   }, [clearError]);
 
+  // Redirect if no token
+  useEffect(() => {
+    if (!token) {
+      navigate('/forgot-password');
+    }
+  }, [token, navigate]);
+
   const validateForm = () => {
     const newErrors = {};
-
-    // Name validation
-    if (!formData.name.trim()) {
-      newErrors.name = 'Name is required';
-    } else if (formData.name.trim().length < 2) {
-      newErrors.name = 'Name must be at least 2 characters';
-    }
-
-    // Email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
 
     // Password validation
     if (!formData.password) {
@@ -84,88 +77,89 @@ function Register() {
     setIsLoading(true);
     
     try {
-      const result = await register(formData.name, formData.email, formData.password);
-      
-      if (result.success) {
-        navigate('/dashboard');
+      const response = await fetch('http://localhost:8000/api/v1/auth/reset-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          token: token,
+          new_password: formData.password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setIsSuccess(true);
+        // Redirect to login after 3 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 3000);
+      } else {
+        setErrors({ general: data.detail || 'Failed to reset password' });
       }
     } catch (err) {
-      console.error('Registration error:', err);
+      setErrors({ general: 'Network error. Please try again.' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Social login functionality removed - not implemented
+  if (isSuccess) {
+    return (
+      <main className="container mx-auto px-4 py-8">
+        <section className="py-16">
+          <div className="max-w-md mx-auto">
+            <div className={`p-8 rounded-lg ${themeClasses.backgrounds.secondary} ${themeClasses.transitions.theme}`}>
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                  <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h2 className={`text-2xl font-bold ${themeClasses.text.primary} mb-2`}>
+                  Password Reset Successful!
+                </h2>
+                <p className={`${themeClasses.text.secondary} mb-4`}>
+                  Your password has been reset successfully. You will be redirected to the login page shortly.
+                </p>
+                <Link 
+                  to="/login"
+                  className={`inline-block px-4 py-2 rounded-md ${themeClasses.backgrounds.accent} ${themeClasses.text.onAccent} font-medium hover:opacity-90 transition-opacity`}
+                >
+                  Go to Login
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
       <section className="py-16">
         <div className="max-w-md mx-auto">
           <h1 className={`text-3xl font-bold ${themeClasses.text.primary} mb-6 text-center ${themeClasses.transitions.theme}`}>
-            Create Account
+            Reset Your Password
           </h1>
           
           <div className={`p-8 rounded-lg ${themeClasses.backgrounds.secondary} ${themeClasses.transitions.theme}`}>
-            {authError && (
+            {errors.general && (
               <div className={`mb-4 p-3 rounded-md bg-red-100 border border-red-400 text-red-700 ${themeClasses.transitions.theme}`}>
-                {authError}
+                {errors.general}
               </div>
             )}
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label 
-                  htmlFor="name" 
-                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-2`}
-                >
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-md ${themeClasses.backgrounds.primary} ${themeClasses.text.primary} border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${themeClasses.transitions.theme} ${
-                    errors.name ? 'border-red-500' : ''
-                  }`}
-                  placeholder="Enter your full name"
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                )}
-              </div>
-              
-              <div>
-                <label 
-                  htmlFor="email" 
-                  className={`block text-sm font-medium ${themeClasses.text.primary} mb-2`}
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`w-full px-3 py-2 border rounded-md ${themeClasses.backgrounds.primary} ${themeClasses.text.primary} border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${themeClasses.transitions.theme} ${
-                    errors.email ? 'border-red-500' : ''
-                  }`}
-                  placeholder="Enter your email"
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-600">{errors.email}</p>
-                )}
-              </div>
-              
-              <div>
-                <label 
                   htmlFor="password" 
                   className={`block text-sm font-medium ${themeClasses.text.primary} mb-2`}
                 >
-                  Password
+                  New Password
                 </label>
                 <input
                   type="password"
@@ -176,7 +170,7 @@ function Register() {
                   className={`w-full px-3 py-2 border rounded-md ${themeClasses.backgrounds.primary} ${themeClasses.text.primary} border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${themeClasses.transitions.theme} ${
                     errors.password ? 'border-red-500' : ''
                   }`}
-                  placeholder="Enter your password"
+                  placeholder="Enter your new password"
                 />
                 {errors.password && (
                   <p className="mt-1 text-sm text-red-600">{errors.password}</p>
@@ -189,7 +183,7 @@ function Register() {
                   htmlFor="confirmPassword" 
                   className={`block text-sm font-medium ${themeClasses.text.primary} mb-2`}
                 >
-                  Confirm Password
+                  Confirm New Password
                 </label>
                 <input
                   type="password"
@@ -200,7 +194,7 @@ function Register() {
                   className={`w-full px-3 py-2 border rounded-md ${themeClasses.backgrounds.primary} ${themeClasses.text.primary} border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 ${themeClasses.transitions.theme} ${
                     errors.confirmPassword ? 'border-red-500' : ''
                   }`}
-                  placeholder="Confirm your password"
+                  placeholder="Confirm your new password"
                 />
                 {errors.confirmPassword && (
                   <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
@@ -212,15 +206,13 @@ function Register() {
                 disabled={isLoading}
                 className={`w-full py-2 px-4 rounded-md ${themeClasses.backgrounds.accent} ${themeClasses.text.onAccent} font-medium hover:opacity-90 disabled:opacity-50 transition-opacity ${themeClasses.transitions.theme}`}
               >
-                {isLoading ? 'Creating account...' : 'Create Account'}
+                {isLoading ? 'Resetting Password...' : 'Reset Password'}
               </button>
             </form>
-
-            {/* Social login removed - not implemented */}
             
             <div className="mt-6 text-center">
               <p className={`text-sm ${themeClasses.text.secondary} ${themeClasses.transitions.theme}`}>
-                Already have an account?{' '}
+                Remember your password?{' '}
                 <Link 
                   to="/login" 
                   className={`text-blue-500 hover:text-blue-600 underline ${themeClasses.transitions.theme}`}
@@ -236,4 +228,4 @@ function Register() {
   );
 }
 
-export default Register; 
+export default ResetPassword; 
