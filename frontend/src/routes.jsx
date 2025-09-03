@@ -1,6 +1,6 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { Home, About, Dashboard, Login, Register, NotFound, ResetPassword } from './pages';
+import { Home, About, Dashboard, Login, Register, NotFound, ResetPassword, Profile, ChangePassword } from './pages';
 import { ProtectedRoute, PageTransition } from './components';
 import { useAuth } from './contexts';
 
@@ -32,6 +32,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated}>
             <PageTransition><Dashboard /></PageTransition>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <PageTransition><Profile /></PageTransition>
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/change-password" 
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated}>
+            <PageTransition><ChangePassword /></PageTransition>
           </ProtectedRoute>
         } 
       />
