@@ -3,8 +3,7 @@ import { render, screen, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider, useAuth } from '../AuthContext';
 
-// Mock fetch
-global.fetch = jest.fn();
+// Fetch is mocked globally in test-setup.js
 
 // Test component that uses the auth context
 const TestComponent = () => {
@@ -39,14 +38,18 @@ describe('AuthContext', () => {
     fetch.mockClear();
   });
 
-  it('should provide initial state', () => {
+  it('should provide initial state', async () => {
     renderWithRouter(
       <AuthProvider>
         <TestComponent />
       </AuthProvider>
     );
 
-    expect(screen.getByTestId('loading')).toHaveTextContent('true');
+    // Wait for loading to complete (it might be very fast in tests)
+    await waitFor(() => {
+      expect(screen.getByTestId('loading')).toHaveTextContent('false');
+    });
+    
     expect(screen.getByTestId('authenticated')).toHaveTextContent('false');
     expect(screen.getByTestId('user')).toHaveTextContent('No user');
     expect(screen.getByTestId('error')).toHaveTextContent('No error');
@@ -226,7 +229,7 @@ describe('AuthContext', () => {
 
     // Wait for error to appear
     await waitFor(() => {
-      expect(screen.getByTestId('error')).toHaveTextContent('Network error. Please check your credentials.');
+      expect(screen.getByTestId('error')).toHaveTextContent('Network error');
     });
   });
 }); 

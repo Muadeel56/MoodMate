@@ -12,6 +12,9 @@ vi.mock('./pages', () => ({
   Dashboard: () => <div data-testid="dashboard-page">Dashboard Page</div>,
   Login: () => <div data-testid="login-page">Login Page</div>,
   Register: () => <div data-testid="register-page">Register Page</div>,
+  ResetPassword: () => <div data-testid="reset-password-page">Reset Password Page</div>,
+  Profile: () => <div data-testid="profile-page">Profile Page</div>,
+  ChangePassword: () => <div data-testid="change-password-page">Change Password Page</div>,
   NotFound: () => <div data-testid="not-found-page">404 Page</div>,
 }));
 
@@ -52,6 +55,16 @@ describe('AppRoutes', () => {
 
   it('redirects to login when accessing protected route without authentication', () => {
     renderWithRouter('/dashboard');
+    expect(screen.getByTestId('redirect-to-login')).toBeInTheDocument();
+  });
+
+  it('redirects to login when accessing profile route without authentication', () => {
+    renderWithRouter('/profile');
+    expect(screen.getByTestId('redirect-to-login')).toBeInTheDocument();
+  });
+
+  it('redirects to login when accessing change password route without authentication', () => {
+    renderWithRouter('/change-password');
     expect(screen.getByTestId('redirect-to-login')).toBeInTheDocument();
   });
 
